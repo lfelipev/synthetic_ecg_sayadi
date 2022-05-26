@@ -1,66 +1,48 @@
-function xdot = equacoes_ecg(x,RR, w)
+function xdot = equacoes_ecg(x,RR,RWM)
+
+% Initialization Parameters
+alfa_ecg = [0.7, 0.8, -1, RWM, -9.5, 0.27, 0.15];
+b_ecg = [0.2, 0.1, 0.1, 0.1, 0.1, 0.4, 0.55];
+theta_ecg = [-3/8, -1/3, -1/13, 0, 1/15, 2/5, 4/7]*pi;
 
 alpha_w = 1-sqrt(x(9)^2 + x(10)^2);
 th = atan2(x(10),x(9));
+w = 2*pi/RR;
 
-alfa = 0.7;
-alfa2 = 0.8;
+% Delta theta calcuation
+deltap_minus = mod(th - theta_ecg(1) + pi,2*pi)-pi;
+deltap_plus = mod(th - theta_ecg(2) + pi,2*pi)-pi;
 
-alfaq = -1;
-alfar = 20;
-alfas = -9.5;
+deltaq = mod(th - theta_ecg(3) + pi, 2*pi)-pi;
+deltar = mod(th - theta_ecg(4) + pi, 2*pi)-pi;
+deltas = mod(th - theta_ecg(5) + pi, 2*pi)-pi;
 
-alfat = 0.27;
-alfat2 = 0.15;
+deltat_minus = mod(th - theta_ecg(6) + pi, 2*pi)-pi;
+deltat_plus = mod(th - theta_ecg(7) + pi, 2*pi)-pi;
 
-b = 0.2;
-b2= 0.1;
-bq = 0.1;
-br = 0.1;
-bs = 0.1;
-bt = 0.4;
-bt2 = 0.55;
+% P C T calculation (See Sayadi 2010)
+p_minus = (alfa_ecg(1)*w*(deltap_minus)*exp(-(deltap_minus)^2/(2*b_ecg(1)^2)));
+p_plus = (alfa_ecg(2)*w*(deltap_plus)*exp(-(deltap_plus)^2/(2*b_ecg(2)^2)));
 
-omega = 2*pi/RR;
-w=th;
-delta_p = mod(w - (- 3*pi/8) + pi,2*pi)-pi;
-delta_p2 = mod(w - (- pi/3) + pi,2*pi)-pi;
+cq = (alfa_ecg(3)*w*(deltaq)*exp(-(deltaq)^2/(2*b_ecg(3)^2)));
+cr = (alfa_ecg(4)*w*(deltar)*exp(-(deltar)^2/(2*b_ecg(4)^2)));
+cs = (alfa_ecg(5)*w*(deltas)*exp(-(deltas)^2/(2*b_ecg(5)^2)));
 
-deltaq = mod(w - (- pi/13) + pi, 2*pi)-pi;
-deltar = mod(w + pi, 2*pi)-pi;
-deltas = mod(w - (pi/15) + pi, 2*pi)-pi;
+t_minus = (alfa_ecg(6)*w*(deltat_minus)*exp(-(deltat_minus)^2/(2*b_ecg(6)^2)));
+t_plus = (alfa_ecg(7)*w*(deltat_plus)*exp(-(deltat_plus)^2/(2*b_ecg(7)^2)));
 
-deltat = mod(w - (2*pi/5) + pi, 2*pi)-pi;
-deltat2 = mod(w - (4*pi/7) + pi, 2*pi)-pi;
-
-w=omega;
-
-p = (alfa*w*(delta_p)*exp(-(delta_p)^2/(2*b^2)));
-p2= (alfa2*w*(delta_p2)*exp(-(delta_p2)^2/(2*b2^2)));
-
-cq = (alfaq*w*(deltaq)*exp(-(deltaq)^2/(2*bq^2)));
-cr = (alfar*w*(deltar)*exp(-(deltar)^2/(2*br^2)));
-cs = (alfas*w*(deltas)*exp(-(deltas)^2/(2*bs^2)));
-
-t = (alfat*w*(deltat)*exp(-(deltat)^2/(2*bt^2)));
-t2 = (alfat2*w*(deltat2)*exp(-(deltat2)^2/(2*bt2^2)));
-
-%xdot(1) = r*(1-r); % dot(x)
-xdot(1) = w; % dot(y)
-xdot(2) = -p; % dot(z)
-xdot(3) = -p2; % dot(z)
-xdot(4) = -cq; % dot(z)
-xdot(5) = -cr; % dot(z)
-xdot(6) = -cs; % dot(z)
-xdot(7) = -t;
-xdot(8) = -t2;
-xdot(9) = alpha_w*x(9) - omega*x(10); % dot(x)
-xdot(10) = omega*x(9) + alpha_w*x(10); % dot(y)
+% dot(P) dot(C) dot(T) calculation
+xdot(1) = w; % dot(w)
+xdot(2) = -p_minus;
+xdot(3) = -p_plus;
+xdot(4) = -cq;
+xdot(5) = -cr;
+xdot(6) = -cs;
+xdot(7) = -t_minus;
+xdot(8) = -t_plus;
+xdot(9) = alpha_w*x(9) - w*x(10); % dot(x)
+xdot(10) = w*x(9) + alpha_w*x(10); % dot(y)
 xdot(11) = -x(11);
-
-
-
-
 
 
 
